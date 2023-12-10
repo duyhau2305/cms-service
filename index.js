@@ -11,9 +11,7 @@ app.use(cors());
 
 // connect db
 mongoose
-  .connect('mongodb+srv://haunguyen:haunguyen123@cluster0.wwndzbr.mongodb.net/?retryWrites=true&w=majority', {
-    useNewUrlParser: true,
-  })
+  .connect('mongodb+srv://haunguyen:haunguyen123@cluster0.wwndzbr.mongodb.net/?retryWrites=true&w=majority')
   .then(() => console.log('MongoDB Connected'))
   .catch(err => console.log('MongoDB Error', err));
 
