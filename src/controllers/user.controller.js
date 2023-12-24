@@ -65,7 +65,7 @@ module.exports = {
     // check email exist
     const user = await userServices.findEmail(email);
     if(!user) {
-      res.status(400).json({ 
+      res.status(404).json({ 
         message: 'Email or password is wrong.',
         isSuccess: false
       }); 
@@ -75,7 +75,7 @@ module.exports = {
     // check password
     const validPassword = await bcrypt.compare(password, user.password);
     if(!validPassword) {
-      res.status(400).json({
+      res.status(404).json({
         message: 'Email or password is wrong.',
         isSuccess: false
       });
@@ -227,7 +227,7 @@ module.exports = {
         const access_token = jwt.sign(
           payload,
           'haunguyen',
-          { expiresIn: '1m' }
+          { expiresIn: 2700 }
         )
         res.json({
           message: 'Refresh token Successfully!',
