@@ -32,4 +32,14 @@ router.delete('/:id', userController.delete)
 // @access: public
 router.put('/:id', userController.update)
 
+// @route: POST api/users/auth
+// @desc: Check user auth
+// @access: public
+router.post('/auth', userController.checkAuth)
+
+// @route: POST api/users/auth
+// @desc: Check user auth
+// @access: public
+router.post('/refresh-token', userController.refreshToken)
+
 module.exports = router;

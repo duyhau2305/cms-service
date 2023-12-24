@@ -1,5 +1,8 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
 const userServices = require('../services/user.service');
+
 
 module.exports = {
   getUsers: async (_, res) => {
@@ -62,10 +65,10 @@ module.exports = {
     // check email exist
     const user = await userServices.findEmail(email);
     if(!user) {
-      res.status(400).json({
+      res.status(400).json({ 
         message: 'Email or password is wrong.',
         isSuccess: false
-      });
+      }); 
       return;
     };
 
@@ -79,13 +82,32 @@ module.exports = {
       return;
     };
 
+    const payload = {
+      user: {
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name
+      }
+    }
+
+    // generate token
+    const access_token = jwt.sign(
+      payload,
+      'haunguyen',
+      { expiresIn: 2700 }
+    )
+    const refresh_token = jwt.sign(
+      payload,
+      'haunguyen',
+      { expiresIn: 3600 }
+    )
+
     res.status(200).json({
       message: 'Login Successfully!',
       isSuccess: true,
       data: {
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email
+        access_token,
+        refresh_token
       }
     });
   },
@@ -147,4 +169,81 @@ module.exports = {
       });
     }
   },
+
+  checkAuth: async (req, res) => {
+    const access_token = req.header('x-auth-token');
+
+    if(!access_token) {
+      res.status(401).json({
+        message: 'Access Denied!',
+        isSuccess: false
+      });
+      return;
+    }
+
+    try {
+      const user = jwt.verify(access_token, 'haunguyen');
+      res.json({
+        message: 'Auth Successfully!',
+        isSuccess: true,
+        data: user
+      })
+    } catch(err) {
+      res.status(401).json({
+        message: 'Access Denied!',
+        isSuccess: false
+      });
+    }
+  },
+
+  refreshToken: async(req, res) => {
+    const refresh_token = req.header('x-refresh-token');
+
+    if(!refresh_token) {
+      res.status(401).json({
+        message: 'Access Denied!',
+        isSuccess: false
+      });
+      return;
+    }
+
+    jwt.verify(refresh_token, 'haunguyen', (err, user) => {
+      if(err) {
+        res.status(404).json({
+          message: 'No Authenticate',
+          isSuccess: false
+        });
+        return;
+      }
+
+      console.log('user: ', user)
+
+      try {
+        const payload = {
+          user
+        }
+    
+        // generate token
+        const access_token = jwt.sign(
+          payload,
+          'haunguyen',
+          { expiresIn: '1m' }
+        )
+        res.json({
+          message: 'Refresh token Successfully!',
+          isSuccess: true,
+          data: {
+            access_token
+          }
+        })
+      } catch(err) {
+        res.status(401).json({
+          message: 'Access Denied!',
+          isSuccess: false
+        });
+      }
+    })
+
+    
+  }
 }
